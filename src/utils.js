@@ -14,6 +14,7 @@ function noteToResponse(note) {
     title: note.title,
     content: note.content,
     is_pinned: Boolean(note.isPinned),
+    reminder_at: note.reminderAt ? note.reminderAt.toISOString() : null,
     created_at: note.createdAt.toISOString(),
     updated_at: note.updatedAt.toISOString(),
   };

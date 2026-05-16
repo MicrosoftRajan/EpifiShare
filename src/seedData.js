@@ -71,6 +71,12 @@ async function seedDatabase({ quiet = false, force = false } = {}) {
     }
   }
 
+  const reminderTime = new Date();
+  reminderTime.setHours(reminderTime.getHours() + 2);
+  notes.alice[1].reminderAt = reminderTime;
+  await notes.alice[1].save();
+  log('  Reminder: alice → Meeting notes');
+
   await NoteShare.create({ noteId: notes.alice[0]._id, userId: users.bob._id });
   log('  Share: alice → bob (Grocery list)');
 

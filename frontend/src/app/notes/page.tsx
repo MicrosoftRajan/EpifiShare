@@ -6,6 +6,13 @@ import { api, ApiError } from '@/lib/api';
 import { isLoggedIn } from '@/lib/auth';
 import type { Note } from '@/lib/types';
 import { LoaderOne } from '@/components/ui/loader';
+import {
+  defaultReminderValue,
+  formatReminder,
+  fromDatetimeLocalValue,
+  isReminderOverdue,
+  toDatetimeLocalValue,
+} from '@/lib/reminder';
 
 export default function NotesPage() {
   const router = useRouter();
@@ -16,6 +23,8 @@ export default function NotesPage() {
   const [content, setContent] = useState('');
   const [shareEmail, setShareEmail] = useState('');
   const [sharingId, setSharingId] = useState<string | null>(null);
+  const [remindingId, setRemindingId] = useState<string | null>(null);
+  const [reminderValue, setReminderValue] = useState(defaultReminderValue());
 
   const loadNotes = useCallback(async () => {
     setError('');
@@ -67,6 +76,34 @@ export default function NotesPage() {
       await loadNotes();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to pin');
+    }
+  }
+
+  function openReminder(note: Note) {
+    setRemindingId(remindingId === note.id ? null : note.id);
+    setReminderValue(
+      note.reminder_at ? toDatetimeLocalValue(note.reminder_at) : defaultReminderValue()
+    );
+  }
+
+  async function handleSetReminder(id: string) {
+    if (!reminderValue) return;
+    try {
+      await api.setReminder(id, fromDatetimeLocalValue(reminderValue));
+      setRemindingId(null);
+      await loadNotes();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to set reminder');
+    }
+  }
+
+  async function handleClearReminder(id: string) {
+    try {
+      await api.setReminder(id, null);
+      setRemindingId(null);
+      await loadNotes();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to clear reminder');
     }
   }
 
@@ -146,10 +183,28 @@ export default function NotesPage() {
                     Pin
                   </span>
                 )}
+                {note.reminder_at && (
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-white ${
+                      isReminderOverdue(note.reminder_at) ? 'bg-orange-600' : 'bg-blue-600'
+                    }`}
+                  >
+                    {isReminderOverdue(note.reminder_at) ? 'Due' : 'Reminder'}
+                  </span>
+                )}
               </div>
               <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-600 dark:text-zinc-400">
                 {note.content}
               </p>
+              {note.reminder_at && (
+                <p
+                  className={`mt-2 text-xs font-medium ${
+                    isReminderOverdue(note.reminder_at) ? 'text-orange-600' : 'text-blue-600'
+                  }`}
+                >
+                  Reminder: {formatReminder(note.reminder_at)}
+                </p>
+              )}
               <p className="mt-2 text-xs text-zinc-400">
                 Updated {new Date(note.updated_at).toLocaleString()}
               </p>
@@ -167,6 +222,17 @@ export default function NotesPage() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => openReminder(note)}
+                  className={`rounded-lg border px-3 py-1 text-xs font-medium ${
+                    note.reminder_at
+                      ? 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700'
+                      : 'border-zinc-300 text-zinc-700 hover:border-blue-400 hover:text-blue-600 dark:border-zinc-600 dark:text-zinc-300'
+                  }`}
+                >
+                  {note.reminder_at ? 'Edit reminder' : 'Reminder'}
+                </button>
+                <button
+                  type="button"
                   onClick={() => setSharingId(sharingId === note.id ? null : note.id)}
                   className="rounded-lg border border-zinc-300 px-3 py-1 text-xs dark:border-zinc-600"
                 >
@@ -180,6 +246,37 @@ export default function NotesPage() {
                   Delete
                 </button>
               </div>
+              {remindingId === note.id && (
+                <div className="mt-3 space-y-2 rounded-lg border border-blue-200 bg-blue-50/50 p-3 dark:border-blue-900 dark:bg-blue-950/30">
+                  <label className="block text-xs font-medium text-blue-800 dark:text-blue-200">
+                    Remind me at
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={reminderValue}
+                    onChange={(e) => setReminderValue(e.target.value)}
+                    className="w-full rounded-lg border border-blue-300 px-2 py-1 text-sm dark:border-blue-800 dark:bg-zinc-950"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSetReminder(note.id)}
+                      className="rounded-lg bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
+                    >
+                      Save reminder
+                    </button>
+                    {note.reminder_at && (
+                      <button
+                        type="button"
+                        onClick={() => handleClearReminder(note.id)}
+                        className="rounded-lg border border-blue-300 px-3 py-1 text-sm text-blue-700 dark:border-blue-700 dark:text-blue-300"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
               {sharingId === note.id && (
                 <div className="mt-3 flex gap-2">
                   <input

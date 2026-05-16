@@ -40,7 +40,7 @@ function validateNoteBody(title, content, res) {
 
 router.get('/notes', authMiddleware, async (req, res) => {
   const notes = await Note.find({ ownerId: req.userId })
-    .sort({ isPinned: -1, updatedAt: -1 })
+    .sort({ isPinned: -1, reminderAt: 1, updatedAt: -1 })
     .exec();
 
   return res.status(200).json(notes.map(noteToResponse));
@@ -166,6 +166,43 @@ router.patch('/notes/:id/pin', authMiddleware, async (req, res) => {
     ...noteToResponse(note),
     is_pinned: note.isPinned,
   });
+});
+
+/** Custom feature: set or clear a reminder */
+router.patch('/notes/:id/reminder', authMiddleware, async (req, res) => {
+  const { reminder_at } = req.body || {};
+
+  if (reminder_at !== null && (reminder_at === undefined || typeof reminder_at !== 'string')) {
+    res.locals.errorMessage = 'reminder_at must be an ISO date string or null';
+    return res.status(400).json({ message: res.locals.errorMessage });
+  }
+
+  const { note, isOwner } = await getNoteAccess(req.params.id, req.userId);
+  if (!note) {
+    return res.status(404).json({ message: 'Note not found' });
+  }
+  if (!isOwner) {
+    return res.status(403).json({ message: 'Only the owner can set a reminder' });
+  }
+
+  if (reminder_at === null) {
+    note.reminderAt = null;
+  } else {
+    const when = new Date(reminder_at);
+    if (Number.isNaN(when.getTime())) {
+      return res.status(400).json({ message: 'Invalid reminder_at date' });
+    }
+    note.reminderAt = when;
+  }
+
+  await note.save();
+  console.log(
+    `   ↳ Reminder ${note.reminderAt ? 'set' : 'cleared'}: "${note.title}"${
+      note.reminderAt ? ` @ ${note.reminderAt.toISOString()}` : ''
+    }`
+  );
+
+  return res.status(200).json(noteToResponse(note));
 });
 
 module.exports = router;

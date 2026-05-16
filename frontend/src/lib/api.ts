@@ -83,4 +83,10 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify({ pinned }),
     }),
+
+  setReminder: (id: string, reminder_at: string | null) =>
+    request<Note>(`/notes/${id}/reminder`, {
+      method: 'PATCH',
+      body: JSON.stringify({ reminder_at }),
+    }),
 };

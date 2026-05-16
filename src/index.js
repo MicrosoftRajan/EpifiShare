@@ -47,6 +47,7 @@ app.get('/', (_req, res) => {
       'DELETE /notes/:id',
       'POST /notes/:id/share',
       'PATCH /notes/:id/pin',
+      'PATCH /notes/:id/reminder',
     ],
   });
 });

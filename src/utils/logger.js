@@ -40,6 +40,7 @@ function printStartupBanner(port) {
   console.log('    DELETE /notes/:id      (auth)');
   console.log('    POST   /notes/:id/share (auth)');
   console.log('    PATCH  /notes/:id/pin   (auth)');
+  console.log('    PATCH  /notes/:id/reminder (auth)');
   console.log('----------------------------------------');
   console.log('  Demo users (password hashed in DB):');
   DEMO_USERS.forEach(({ email }) => {

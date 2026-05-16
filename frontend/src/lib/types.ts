@@ -10,6 +10,7 @@ export type Note = {
   created_at: string;
   updated_at: string;
   is_pinned?: boolean;
+  reminder_at?: string | null;
 };
 
 export type LoginResponse = {
