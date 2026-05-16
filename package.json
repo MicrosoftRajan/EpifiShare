@@ -10,7 +10,7 @@
     "seed:force": "node scripts/seed.js --force"
   },
   "engines": {
-    "node": ">=18"
+    "node": "20.x"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

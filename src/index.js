@@ -8,11 +8,9 @@ const authRoutes = require('./routes/auth');
 const notesRoutes = require('./routes/notes');
 const aboutRoutes = require('./routes/about');
 const openApiSpec = require('./openapi');
+const { validateEnv } = require('./config/env');
 
-if (!process.env.JWT_SECRET) {
-  console.error('JWT_SECRET is required. Copy .env.example to .env and set it.');
-  process.exit(1);
-}
+validateEnv();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -82,7 +80,11 @@ async function start() {
   try {
     await connectDB();
   } catch (err) {
-    console.error('Failed to connect to MongoDB:', err.message);
+    console.error('\n[startup] Failed to connect to MongoDB:', err.message);
+    console.error('[startup] Check:');
+    console.error('  1. MONGODB_URI is correct in Render → Environment');
+    console.error('  2. Atlas → Network Access → allow 0.0.0.0/0 (or Render IPs)');
+    console.error('  3. Password special chars in URI must be URL-encoded\n');
     process.exit(1);
   }
 
