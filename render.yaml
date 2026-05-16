@@ -1,13 +1,31 @@
+# Render Blueprint — backend only (repo root, not frontend/)
+# Dashboard: https://dashboard.render.com → New → Blueprint → connect GitHub repo
+
 services:
   - type: web
-    name: notes-backend
+    name: epifi-share-api
     runtime: node
+    plan: free
+    region: singapore
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /health
     envVars:
-      - key: JWT_SECRET
-        generateValue: true
-      - key: MONGODB_URI
-        sync: false
+      - key: NODE_ENV
+        value: production
       - key: NODE_VERSION
         value: "20"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 24h
+      - key: SEED_ON_START
+        value: "false"
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: MONGODB_URI
+        sync: false
+      - key: ABOUT_NAME
+        sync: false
+      - key: ABOUT_EMAIL
+        sync: false

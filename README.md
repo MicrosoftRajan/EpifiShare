@@ -52,14 +52,55 @@ App: `http://localhost:3001`
 | GET | `/about` | No |
 | GET | `/openapi.json` | No |
 
-## Deploy (Render)
+## Deploy (Render — recommended)
 
-1. Push to GitHub.
-2. Create a **Web Service** on [Render](https://render.com), connect the repo.
-3. Set env vars: `MONGODB_URI` (MongoDB Atlas connection string), `JWT_SECRET`, `ABOUT_NAME`, `ABOUT_EMAIL`.
-4. Submit the service URL (e.g. `https://notes-backend.onrender.com`) as your assignment base URL.
+No Fly CLI or global app names. Free tier works for the assignment.
 
-**MongoDB Atlas (free):** Create a cluster at [mongodb.com/atlas](https://www.mongodb.com/atlas), get the connection string, and set `MONGODB_URI`.
+### Option A — Blueprint (fastest)
+
+1. Push this repo to GitHub (`main` branch must include `render.yaml`).
+2. Go to [Render Dashboard](https://dashboard.render.com) → **New** → **Blueprint**.
+3. Connect repo `MicrosoftRajan/EpifiShare` (or your fork).
+4. When prompted for env vars, paste from your local `.env`:
+   - `MONGODB_URI` — Atlas connection string
+   - `ABOUT_NAME` — e.g. `Rajan Yadav`
+   - `ABOUT_EMAIL` — your email  
+   (`JWT_SECRET` is auto-generated; you can keep it or replace in the dashboard.)
+5. Click **Apply**. Wait for deploy (~2–5 min).
+6. Open `https://epifi-share-api.onrender.com/about` (name may vary slightly).
+7. **Submit that base URL** for the assignment (e.g. `https://epifi-share-api.onrender.com`).
+
+### Option B — Web Service (manual)
+
+1. **New** → **Web Service** → connect GitHub repo.
+2. Settings:
+   - **Root directory:** leave empty (repo root)
+   - **Runtime:** Node
+   - **Build:** `npm install`
+   - **Start:** `npm start`
+   - **Health check path:** `/health`
+3. **Environment** (add all):
+
+   | Key | Value |
+   |-----|--------|
+   | `MONGODB_URI` | Atlas URI from `.env` |
+   | `JWT_SECRET` | long random string |
+   | `JWT_EXPIRES_IN` | `24h` |
+   | `ABOUT_NAME` | your name |
+   | `ABOUT_EMAIL` | your email |
+   | `SEED_ON_START` | `false` |
+   | `COOKIE_SECURE` | `true` |
+   | `NODE_ENV` | `production` |
+
+4. Deploy → copy the `*.onrender.com` URL.
+
+**MongoDB Atlas:** In Atlas → **Network Access** → allow `0.0.0.0/0` (or Render’s IPs) so the cloud service can reach the cluster.
+
+**Cold start:** Free tier sleeps after ~15 min idle; first request may take ~30s.
+
+### Frontend (optional)
+
+On Vercel, set `NEXT_PUBLIC_API_URL` to your Render URL (e.g. `https://epifi-share-api.onrender.com`).
 
 ## Quick test
 
