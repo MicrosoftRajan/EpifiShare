@@ -1,8 +1,8 @@
 # Fly.io — deploy BACKEND only (Express API)
 # Submit https://epifishare.fly.dev (or your app URL) for the assignment
 
-app = 'epifishare'
-primary_region = 'ams'
+app = 'epifishare-rajan'
+primary_region = 'bom'
 
 [build]
   dockerfile = "Dockerfile"
