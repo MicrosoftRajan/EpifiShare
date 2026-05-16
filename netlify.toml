@@ -1,0 +1,9 @@
+# Netlify — FRONTEND only (Next.js in frontend/)
+# API stays on Render. Set NEXT_PUBLIC_API_URL in Netlify → Environment.
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
