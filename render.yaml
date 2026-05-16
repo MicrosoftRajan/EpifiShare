@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: notes-backend
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
+      - key: NODE_VERSION
+        value: "20"
